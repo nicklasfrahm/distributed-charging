@@ -31,6 +31,15 @@ def on_message(client, obj, msg):
         else:
             chargeRate = MAX_CHARGE_CURRENT
 
+    if "manager" in msg.topic:
+        manager = json.loads(msg.payload)
+
+        if manager.get("online"):
+            client.publish("grids/" + gridName + "/join",
+                           payload=json.dumps({'station_id': stationName}), qos=1)
+        else:
+            chargeRate = 0
+
 
 def on_publish(client, obj, mid):
     print("mid: " + str(mid))
@@ -73,6 +82,7 @@ while(not client.is_connected()):
 
 # Subscribe to appropiate topic
 client.subscribe("grids/" + gridName + "/properties")
+client.subscribe("services/manager")
 
 # Publish message
 info = client.publish("grids/" + gridName + "/join",
