@@ -85,6 +85,7 @@ def on_connect(client, userdata, flags, rc):
 
   # Subscribing in on_connect() means that if we lose the connection and
   # reconnect then subscriptions will be renewed.
+  client.publish("services/manager", payload=json.dumps({ "online": True }), qos=1)
   client.subscribe("grids/+/join", qos=1)
   client.subscribe("grids/+/leave", qos=1)
 
@@ -94,6 +95,7 @@ def main():
   # Create MQTT client.
   client = mqtt.Client()
   client.on_connect = on_connect
+  client.will_set("services/manager", payload=json.dumps({ "online": False }), qos=1)
   client.message_callback_add("grids/+/join", on_grid_join)
   client.message_callback_add("grids/+/leave", on_grid_leave)
 
