@@ -10,6 +10,10 @@ The application consists of three components:
 - `./src/manager.py <brokerURI>`
 - Mosquitto MQTT broker
 
+# Public broker
+
+A public broker can be found at `mqtt://nfrah16.dedyn.io:1883`.
+
 # License
 
 This project is licensed under the term of the [MIT license](./LICENSE.md).
