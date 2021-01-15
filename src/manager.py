@@ -133,12 +133,18 @@ def on_connect(client, userdata, flags, rc):
   client.subscribe("grids/+/leave", qos=1)
   client.subscribe("grids/+/reset", qos=1)
 
+# The callback if the connection to the MQTT broker breaks.
+def on_disconnect(client, userdata, rc):
+  print(f"[WARN] Disconnected from broker: {args.broker_uri}")
+
+# Contains the basic logic.
 def main():
   print("[INFO] Starting charging manager ...")
 
   # Create MQTT client.
   client = mqtt.Client()
   client.on_connect = on_connect
+  client.on_disconnect = on_disconnect
   client.will_set("services/manager", payload=json.dumps({ "online": False }), qos=1)
   client.message_callback_add("grids/+/join", on_grid_join)
   client.message_callback_add("grids/+/leave", on_grid_leave)
