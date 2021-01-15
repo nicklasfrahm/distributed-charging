@@ -12,6 +12,13 @@ chargeRate = 0
 # Define callback functions
 def on_connect(client, userdata, flags, rc):
     print("rc: " + str(rc))
+    # Subscribe to appropiate topic
+    client.subscribe("grids/" + gridName + "/properties")
+    client.subscribe("services/manager")
+
+    # Publish initial info
+    info = client.publish("grids/" + gridName + "/join",
+                          payload=json.dumps({'station_id': stationName}), qos=1)
 
 
 def on_disconnect(client, userdata, mid):
@@ -84,14 +91,6 @@ client.connect(hostname, int(port))
 while(not client.is_connected()):
     client.loop()
 
-# Subscribe to appropiate topic
-client.subscribe("grids/" + gridName + "/properties")
-client.subscribe("services/manager")
-
-# Publish initial info
-info = client.publish("grids/" + gridName + "/join",
-                      payload=json.dumps({'station_id': stationName}), qos=1)
-
 while(client.is_connected()):
     currentCharge = 0
 
@@ -100,4 +99,4 @@ while(client.is_connected()):
         currentCharge += chargeRate*0.1
         print(
             F"Charge rate: {chargeRate}\nCurrent charge: {currentCharge}\n\n")
-        sleep(1)
+        sleep(0.1)
