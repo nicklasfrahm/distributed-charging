@@ -32,6 +32,8 @@ def on_disconnect(client, userdata, mid):
     global chargeRate
     chargeRate = 0
 
+    print("Client disconnected!")
+
 
 def on_message(client, obj, msg):
     global chargeRate
@@ -109,14 +111,22 @@ while(client.is_connected()):
     while(currentCharge < 100):
         client.loop()
         currentCharge += chargeRate*0.1
+        if currentCharge > 100:
+            currentCharge = 100
         print(
-            F"\r\rCharge rate: {chargeRate} Current charge: {currentCharge}", end="")
+            F"\r\rGrid: {gridName}   Station: {stationName}   Charge rate: {chargeRate}A   Current charge: {int(currentCharge)}%", end="")
         sleep(0.1)
 
+    # End of charge cycle, restart from 0%
     print("\n\nCharging complete!")
-    print("Resuming in 3..")
+    print("\rResuming in 3..", end="")
+    client.loop()
     sleep(1)
-    print("\rResuming in 2..")
+
+    print("\rResuming in 2..", end="")
+    client.loop()
     sleep(1)
-    print("\rResuming in 1..")
+
+    print("\rResuming in 1..", end="")
+    client.loop()
     sleep(1)
