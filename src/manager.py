@@ -140,11 +140,11 @@ def on_grid_leave(client, userdata, msg):
 
     if len(grids[grid_id]["stations"]) != 0:
         station_count = len(grids[grid_id]["stations"])
-        charge_current = int(
+        grids[grid_id]["charge_current"] = int(
             grids[grid_id]["current_capacity"] / station_count)
 
         client.publish(f"grids/{grid_id}/properties", json.dumps({
-            "charge_current": charge_current
+            "charge_current": grids[grid_id]["charge_current"]
         }), qos=1)
     else:
         del grids[grid_id]

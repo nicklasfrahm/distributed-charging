@@ -125,18 +125,19 @@ def main(args):
                 sleep(0.1)
 
             # End of charge cycle, restart from 0%
-            print("\n\nCharging complete!")
-            print("\rResuming in 3..", end="")
+            clear()
+            print("Charging complete!")
+            print("\rRestarting in 3s ...", end="")
             client.loop()
-            sleep(1)
+            sleep(0.5)
 
-            print("\rResuming in 2..", end="")
+            print("\rRestarting in 2s ...", end="")
             client.loop()
-            sleep(1)
+            sleep(0.5)
 
-            print("\rResuming in 1..", end="")
+            print("\rRestarting in 1s ...", end="")
             client.loop()
-            sleep(1)
+            sleep(0.5)
     except KeyboardInterrupt:
         clear()
         sys.exit()
