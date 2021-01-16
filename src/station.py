@@ -112,3 +112,11 @@ while(client.is_connected()):
         print(
             F"\r\rCharge rate: {chargeRate} Current charge: {currentCharge}", end="")
         sleep(0.1)
+
+    print("\n\nCharging complete!")
+    print("Resuming in 3..")
+    sleep(1)
+    print("\rResuming in 2..")
+    sleep(1)
+    print("\rResuming in 1..")
+    sleep(1)
