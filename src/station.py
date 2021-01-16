@@ -3,15 +3,22 @@ import paho.mqtt.client as mqtt
 from urllib.parse import urlparse
 import json
 from time import sleep
+import os
 
 # Global variables
 MAX_CHARGE_CURRENT = 32
 chargeRate = 0
 
 
+# Clear screen function for pretty printing
+def clear():
+    os.system("clear")
+
 # Define callback functions
+
+
 def on_connect(client, userdata, flags, rc):
-    print("rc: " + str(rc))
+    # print("rc: " + str(rc))
     # Subscribe to appropiate topic
     client.subscribe("grids/" + gridName + "/properties")
     client.subscribe("services/manager")
@@ -28,7 +35,7 @@ def on_disconnect(client, userdata, mid):
 
 def on_message(client, obj, msg):
     global chargeRate
-    print(msg.topic + " " + str(msg.qos) + " " + str(msg.payload))
+    # print(msg.topic + " " + str(msg.qos) + " " + str(msg.payload))
 
     if "properties" in msg.topic:
         properties = json.loads(msg.payload)
@@ -53,15 +60,18 @@ def on_message(client, obj, msg):
 
 
 def on_publish(client, obj, mid):
-    print("mid: " + str(mid))
+    # print("mid: " + str(mid))
+    pass
 
 
 def on_subscribe(client, obj, mid, granted_qos):
-    print("Subscribed: " + str(mid) + " " + str(granted_qos))
+    # print("Subscribed: " + str(mid) + " " + str(granted_qos))
+    pass
 
 
 def on_log(client, obj, level, string):
-    print(string)
+    # print(string)
+    pass
 
 
 # Parse command line arguments
@@ -94,9 +104,11 @@ while(not client.is_connected()):
 while(client.is_connected()):
     currentCharge = 0
 
+    clear()
+
     while(currentCharge < 100):
         client.loop()
         currentCharge += chargeRate*0.1
         print(
-            F"Charge rate: {chargeRate}\nCurrent charge: {currentCharge}\n\n")
+            F"\r\rCharge rate: {chargeRate} Current charge: {currentCharge}", end="")
         sleep(0.1)
