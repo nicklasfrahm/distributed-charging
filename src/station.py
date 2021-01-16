@@ -1,9 +1,10 @@
 import sys
+import json
+import os
+import argparse
 import paho.mqtt.client as mqtt
 from urllib.parse import urlparse
-import json
 from time import sleep
-import os
 
 # Global variables
 MAX_CHARGE_CURRENT = 32
@@ -76,57 +77,77 @@ def on_log(client, obj, level, string):
     pass
 
 
-# Parse command line arguments
-if len(sys.argv) != 4:
-    print("Invalid args, usage is:")
-    print("python3 station.py brokerURI gridName stationName")
-brokerURI, gridName, stationName = sys.argv[1:]
+def main(args):
+    global brokerURI
+    global gridName
+    global stationName
+    brokerURI = args.broker_uri
+    gridName = args.grid_id
+    stationName = args.station_id
 
-hostname, port = urlparse(brokerURI).netloc.split(":")
+    if brokerURI.count(":") != 2:
+        print(f"error: Broker URI invalid and not in format: mqtt://<host>:<post>")
+        exit(1)
+    hostname, port = urlparse(brokerURI).netloc.split(":")
 
-print("Starting station with following settings:")
-print(F"broker: {brokerURI}, grid: {gridName}, station: {stationName}")
+    print("Starting station with following settings:")
+    print(F"broker: {brokerURI}, grid: {gridName}, station: {stationName}")
 
-client = mqtt.Client(stationName, clean_session=True)
+    client = mqtt.Client(stationName, clean_session=True)
 
-client.on_message = on_message
-client.on_connect = on_connect
-client.on_disconnect = on_disconnect
-client.on_publish = on_publish
-client.on_subscribe = on_subscribe
-client.on_log = on_log
-client.will_set("grids/"+gridName+"/leave",
-                payload=json.dumps({'station_id': stationName}), qos=1)
+    client.on_message = on_message
+    client.on_connect = on_connect
+    client.on_disconnect = on_disconnect
+    client.on_publish = on_publish
+    client.on_subscribe = on_subscribe
+    client.on_log = on_log
+    client.will_set(f"grids/{gridName}/leave",
+                    payload=json.dumps({"station_id": stationName}), qos=1)
 
-# Connect to broker and wait for connection
-client.connect(hostname, int(port))
-while(not client.is_connected()):
-    client.loop()
+    # Connect to broker and wait for connection
+    client.connect(hostname, int(port))
+    try:
+        while(not client.is_connected()):
+            client.loop()
 
-while(client.is_connected()):
-    currentCharge = 0
+        while(client.is_connected()):
+            currentCharge = 0
 
-    clear()
+            clear()
 
-    while(currentCharge < 100):
-        client.loop()
-        currentCharge += chargeRate*0.1
-        if currentCharge > 100:
-            currentCharge = 100
-        print(
-            F"\r\rGrid: {gridName}   Station: {stationName}   Charge rate: {chargeRate}A   Current charge: {int(currentCharge)}%", end="")
-        sleep(0.1)
+            while(currentCharge < 100):
+                client.loop()
+                currentCharge += chargeRate*0.1
+                if currentCharge > 100:
+                    currentCharge = 100
+                print(
+                    F"\r\rGrid: {gridName}   Station: {stationName}   Charge rate: {chargeRate}A   Current charge: {int(currentCharge)}%", end="")
+                sleep(0.1)
 
-    # End of charge cycle, restart from 0%
-    print("\n\nCharging complete!")
-    print("\rResuming in 3..", end="")
-    client.loop()
-    sleep(1)
+            # End of charge cycle, restart from 0%
+            print("\n\nCharging complete!")
+            print("\rResuming in 3..", end="")
+            client.loop()
+            sleep(1)
 
-    print("\rResuming in 2..", end="")
-    client.loop()
-    sleep(1)
+            print("\rResuming in 2..", end="")
+            client.loop()
+            sleep(1)
 
-    print("\rResuming in 1..", end="")
-    client.loop()
-    sleep(1)
+            print("\rResuming in 1..", end="")
+            client.loop()
+            sleep(1)
+    except KeyboardInterrupt:
+        clear()
+        sys.exit()
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument('broker_uri', type=str,
+                        help='The MQTT broker URI to connect to.')
+    parser.add_argument('grid_id', type=str,
+                        help='The name of the grid the station is connected to.')
+    parser.add_argument('station_id', type=str,
+                        help='The name of the station.')
+    main(parser.parse_args())
